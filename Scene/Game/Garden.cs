@@ -100,12 +100,11 @@ public class Garden : IScene
             {
                 KeyInHand = true;
                 progress++;
-                Console.WriteLine("kulcs felszedve");
             }
 
             if(Vector2.Distance(player.screenPos, new Vector2(793, 508)) <= 80 && KeyInHand == true)
             {
-                Console.WriteLine("ajtó kinyitva");
+                sceneManager.ChangeScene("house-floor-1");
             }
         }
     }

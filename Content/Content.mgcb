@@ -13,8 +13,47 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin floor.tmx
+/copy:floor.tmx
+
 #begin garden.tmx
 /copy:garden.tmx
+
+#begin ghost_1.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:ghost_1.png
+
+#begin ghost_2.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:ghost_2.png
+
+#begin ghost-in-near.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:ghost-in-near.mp3
+
+#begin jumpscare.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:jumpscare.mp3
 
 #begin key.png
 /importer:TextureImporter
@@ -49,6 +88,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:player.png
+
+#begin tilesmap-indoor.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:tilesmap-indoor.png
 
 #begin tilesmap.png
 /importer:TextureImporter
