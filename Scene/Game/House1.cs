@@ -43,9 +43,11 @@ public class House1 : IScene
     private bool Error = false;
     private bool OfficeClosed = true;
     private bool ProofAvailable = true;
+    private bool Closed = false;
 
     private double GhostSongCooldown;
     private double CodesCooldown;
+    private double ClosedCountdown;
     private int? Codes = null;
 
     private string[] Task = new string[4];
@@ -126,7 +128,7 @@ public class House1 : IScene
         Task[0] = "Object: Find evidence 0/3";
         Task[1] = "Object: Find evidence 1/3";
         Task[2] = "Object: Find evidence 2/3";
-        Task[3] = "Object: Find evidence 3/3";
+        Task[3] = "Object: Leave the mansion.";
 
     }
 
@@ -134,6 +136,15 @@ public class House1 : IScene
     {
         player.Update(gameTime, solidTiles, camera);
         camera.Follow(player.Position, new Vector2(map.Width * 64, map.Height * 64));
+
+        double elapsed = gameTime.ElapsedGameTime.TotalSeconds * 1000;
+
+        if(ClosedCountdown >= 0)
+        {
+            ClosedCountdown -= elapsed;
+        } else {
+            Closed = false;
+        }
 
         if(GameData.PlayerVector != null)
         {
@@ -186,8 +197,6 @@ public class House1 : IScene
                 }
             }
         }
-
-        double elapsed = gameTime.ElapsedGameTime.TotalSeconds * 1000;
 
         if(GhostSongCooldown >= 0)
         {
@@ -285,6 +294,9 @@ public class House1 : IScene
                 {
                     sceneManager.ChangeScene("house-floor-2");
                     GameData.PlayerVector = new Vector2(1279, 1340);
+                } else {
+                    Closed = true;
+                    ClosedCountdown = 500;
                 }
             }
 
@@ -319,6 +331,11 @@ public class House1 : IScene
             if(Vector2.Distance(player.screenPos, camera.WorldToScreen(new Vector2(1886, 3293))) <= 64)
             {
                 sceneManager.ChangeScene("garden");
+            }
+
+            if(GameData.Task == 3)
+            {
+                GameData.End = true;
             }
     }
 
@@ -435,6 +452,12 @@ public class House1 : IScene
         
         Vector2 ObjectM = pixelfont.MeasureString(Task[GameData.Task]);
         Vector2 Object = new Vector2((int)((Width / 2) - ((ObjectM.X / 2) * 0.5)),(int)(50 - ((ObjectM.Y / 2) * 0.5)));
+
+        if(Closed == true)
+        {
+            Vector2 ClosedM = pixelfont.MeasureString("CLOSED");
+            spriteBatch.DrawString(pixelfont, "CLOSED", new Vector2(Width / 2 - (ClosedM.X / 2), Height / 4 - (ClosedM.Y / 2)), Color.White, 0f, Vector2.Zero, 0.5f, SpriteEffects.None, 0.5f);
+        }
 
         spriteBatch.DrawString(pixelfont, Task[GameData.Task], Object, Color.White, 0f, Vector2.Zero, 0.5f, SpriteEffects.None, 0.7f);
     }
