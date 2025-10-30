@@ -1,5 +1,5 @@
 ## About Project
-In this game, you play a newspaper reporter who investigates Crowley Mansion. During your investigation, you collect evidence while being chased by ghosts.
+In this game, you play a journalist who investigates Crowley Mansion. During your investigation, you collect evidence while being chased by ghosts.
 
 ## Stack
 C# monogame
