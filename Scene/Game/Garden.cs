@@ -19,13 +19,17 @@ public class Garden : IScene
     private Texture2D tileset;
     private Texture2D playerTexture;
     private Texture2D key;
+    private Texture2D end;
     private Player player;
 
     private bool KeyInHand = false;
     private bool Closed = false;
-    private int progress = 0;
+    private bool opened = false;
 
-    private string[] Task = new string[2];
+    private int progress = 0;
+    private double ClosedCountdown = 0;
+
+    private string[] Task = new string[3];
 
     private Camera2D camera;
 
@@ -70,6 +74,10 @@ public class Garden : IScene
 
         Task[0] = "Object: Search for the mansion key in the garden";
         Task[1] = "Object: Go in through the main door.";
+        Task[2] = " ";
+
+        end = new Texture2D(graphicsDevice, 1, 1);
+        end.SetData(new[] { Color.Yellow }); 
     }
 
     public void LoadContent()
@@ -95,6 +103,15 @@ public class Garden : IScene
 
         KeyboardState state = Keyboard.GetState();
 
+        double elapsed = gameTime.ElapsedGameTime.TotalSeconds * 1000;
+
+        if(ClosedCountdown >= 0)
+        {
+            ClosedCountdown -= elapsed;
+        } else {
+            Closed = false;
+        }
+
         if(state.IsKeyDown(Keys.E))
         {
             if(Vector2.Distance(player.screenPos, camera.WorldToScreen(new Vector2(1752, 1117))) <= 80 && KeyInHand == false)
@@ -102,17 +119,29 @@ public class Garden : IScene
                 KeyInHand = true;
                 progress++;
             }
-
-            if(Vector2.Distance(player.screenPos, camera.WorldToScreen(new Vector2(830, 633))) <= 40)
+            
+            if(Vector2.Distance(player.screenPos, camera.WorldToScreen(new Vector2(830, 633))) <= 70)
             {
                 if(KeyInHand == true)
                 {
+                    sceneManager.ChangeScene("house-floor-1");
+                    progress++;
+                    KeyInHand = false;
+                    opened = true;
+                }  else if(opened == true)
+                {
                     GameData.PlayerVector = new Vector2(1895, 3045);
                     sceneManager.ChangeScene("house-floor-1");
-                }  else {
-                    
+                } else {
+                    Closed = true;
+                    ClosedCountdown = 500;
                 }
             }
+        }
+
+        if(Vector2.Distance(camera.WorldToScreen(new Vector2((int)(833 - 50), (int)(1181 - 50))), player.screenPos) <= 64 && GameData.End == true)
+        {
+            sceneManager.ChangeScene("end");
         }
     }
 
@@ -172,7 +201,13 @@ public class Garden : IScene
         if(Closed == true)
         {
             Vector2 ClosedM = pixelfont.MeasureString("CLOSED");
-            spriteBatch.DrawString(pixelfont, "CLOSED", new Vector2(Width / 2 - (ClosedM.X / 2), Height / 2 - (ClosedM.Y / 2)), Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0.5f);
+            spriteBatch.DrawString(pixelfont, "CLOSED", new Vector2(Width / 2 - (ClosedM.X / 2), Height / 4 - (ClosedM.Y / 2)), Color.White, 0f, Vector2.Zero, 0.5f, SpriteEffects.None, 0.5f);
+        }
+
+        if(GameData.End == true)
+        {
+            Vector2 rectanglepos = camera.WorldToScreen(new Vector2((int)(833 - 50), (int)(1181 - 50)));
+            spriteBatch.Draw(end, new Rectangle((int)rectanglepos.X, (int)rectanglepos.Y, 100, 100), null, Color.Yellow, 0f, Vector2.Zero, SpriteEffects.None, 0.2f);
         }
     }
 }
