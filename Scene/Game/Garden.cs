@@ -22,6 +22,7 @@ public class Garden : IScene
     private Player player;
 
     private bool KeyInHand = false;
+    private bool Closed = false;
     private int progress = 0;
 
     private string[] Task = new string[2];
@@ -96,21 +97,30 @@ public class Garden : IScene
 
         if(state.IsKeyDown(Keys.E))
         {
-            if(Vector2.Distance(player.screenPos, new Vector2(1716, 812)) <= 80 && KeyInHand == false)
+            if(Vector2.Distance(player.screenPos, camera.WorldToScreen(new Vector2(1752, 1117))) <= 80 && KeyInHand == false)
             {
                 KeyInHand = true;
                 progress++;
             }
 
-            if(Vector2.Distance(player.screenPos, new Vector2(793, 508)) <= 80 && KeyInHand == true)
+            if(Vector2.Distance(player.screenPos, camera.WorldToScreen(new Vector2(830, 633))) <= 40)
             {
-                sceneManager.ChangeScene("house-floor-1");
+                if(KeyInHand == true)
+                {
+                    GameData.PlayerVector = new Vector2(1895, 3045);
+                    sceneManager.ChangeScene("house-floor-1");
+                }  else {
+                    
+                }
             }
         }
     }
 
     public void Draw(SpriteBatch spriteBatch)
     {
+
+        graphicsDevice.Clear(Color.Black);
+
         int mapWidth = map.Width;
         int mapHeight = map.Height;
 
@@ -157,6 +167,12 @@ public class Garden : IScene
         if(KeyInHand == true)
         {
             spriteBatch.Draw(key, new Vector2(player.screenPos.X + 45, player.screenPos.Y + 30), null, Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0.4f);
+        }
+
+        if(Closed == true)
+        {
+            Vector2 ClosedM = pixelfont.MeasureString("CLOSED");
+            spriteBatch.DrawString(pixelfont, "CLOSED", new Vector2(Width / 2 - (ClosedM.X / 2), Height / 2 - (ClosedM.Y / 2)), Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0.5f);
         }
     }
 }

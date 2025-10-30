@@ -2,25 +2,26 @@ using System;
 using System.Collections.Generic;
 using TiledSharp;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Media;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Media;
 
 namespace Gloomhaven;
 
-public class Office : IScene
+public class Upstair : IScene
 {
     private GraphicsDevice graphicsDevice;
     private SceneManager sceneManager;
     private ContentManager contentManager;
-
-    private TmxMap map;
     
+    private TmxMap map;
+
     private Texture2D playerTexture;
     private Texture2D Ghost1;
     private Texture2D Ghost2;
     private Texture2D TileSet;
+    private Texture2D codePaper;
 
     private Song GhostSong;
 
@@ -29,10 +30,11 @@ public class Office : IScene
     private Vector2 Ghost;
 
     private bool route;
-    private bool Proof2 = true;
+    private bool code;
+    private bool proof = false;
 
     private double GhostSongCooldown;
-
+    
     private string[] Task = new string[4];
 
     private Player player;
@@ -43,13 +45,14 @@ public class Office : IScene
     {
         var map = new TmxMap(mapFilePath);
         var solidTiles = new List<Rectangle>();
-        foreach(var objectGroup in map.ObjectGroups)
+
+        foreach (var objectGroup in map.ObjectGroups)
         {
-            if(objectGroup.Name == "Collision")
+            if (objectGroup.Name == "Collision")
             {
                 foreach (var obj in objectGroup.Objects)
                 {
-                    if(obj.Width > 0 && obj.Height > 0)
+                    if (obj.Width > 0 && obj.Height > 0)
                     {
                         var rect = new Rectangle(
                             (int)obj.X,
@@ -67,22 +70,25 @@ public class Office : IScene
         return solidTiles;
     }
 
-    public Office(GraphicsDevice graphicsDevice, SceneManager sceneManager, ContentManager contentManager)
+    public Upstair(GraphicsDevice graphicsDevice, SceneManager sceneManager, ContentManager contentManager)
     {
         this.graphicsDevice = graphicsDevice;
         this.sceneManager = sceneManager;
         this.contentManager = contentManager;
 
-        Ghost = new Vector2(718, 1477);
+        Ghost = new Vector2(830, 1247);
         route = false;
+
+        codePaper = new Texture2D(graphicsDevice, 1, 1);
+        codePaper.SetData(new [] {Color.White});
     }
 
     public void LoadContent()
     {
-        player = new Player(new Vector2(1218, 1856));
+        player = new Player(new Vector2(1279, 1340));
         camera = new Camera2D(graphicsDevice.Viewport);
 
-        map = new TmxMap("Content/office.tmx");
+        map = new TmxMap("Content/upstair.tmx");
 
         playerTexture = contentManager.Load<Texture2D>("player");
         Ghost1 = contentManager.Load<Texture2D>("ghost_1");
@@ -90,7 +96,7 @@ public class Office : IScene
         GhostSong = contentManager.Load<Song>("ghost-in-near");
         TileSet = contentManager.Load<Texture2D>("tilesmap");
 
-        solidTiles = LoadCollisionObjects("Content/office.tmx");
+        solidTiles = LoadCollisionObjects("Content/upstair.tmx");
 
         pixelfont = contentManager.Load<SpriteFont>("pixelfont");
 
@@ -102,18 +108,16 @@ public class Office : IScene
 
     public void Update(GameTime gameTime)
     {
-
         if(GameData.PlayerVector != null)
         {
             player.Position = GameData.PlayerVector.Value;
             GameData.PlayerVector = null;
         }
-        
+
         player.Update(gameTime, solidTiles, camera);
         camera.Follow(player.Position, new Vector2(map.Width * 64, map.Height * 64));
 
         double elapsed = gameTime.ElapsedGameTime.TotalSeconds * 1000;
-
         Vector2 GhostPosition = camera.WorldToScreen(Ghost);
 
         if(GhostSongCooldown >= 0)
@@ -126,48 +130,56 @@ public class Office : IScene
             MediaPlayer.IsRepeating = false;
         }
 
-        if(Vector2.Distance(player.screenPos, GhostPosition) <= 48)
-        {
-            sceneManager.ChangeScene("ghost");
-        }
-
-        if(Ghost.X == 718 && route == false)
+        if(Ghost.Y == 1247 && route == false)
         {
             route = true;
         } else if(route == false)
         {
-            Ghost.X--;
+            Ghost.Y++;
         }
 
-        if(Ghost.X == 1771 && route == true)
+        if(Ghost.Y == 804 && route == true)
         {
             route = false;
         } else if(route == true)
         {
-            Ghost.X++;
+            Ghost.Y--;
         }
 
-        Vector2 Exit = camera.WorldToScreen(new Vector2(1212, 1952));
-
-        if(Vector2.Distance(Exit, player.screenPos) <= 64)
+        if(Vector2.Distance(player.screenPos, GhostPosition) <= 48)
         {
-            sceneManager.ChangeScene("house-floor-1");
+            sceneManager.ChangeScene("ghost");
         }
 
         KeyboardState state = Keyboard.GetState();
 
         if(state.IsKeyDown(Keys.E))
         {
-            Vector2 Proof2Position = camera.WorldToScreen(new Vector2(1243, 1175));
-
-            if(Vector2.Distance(Proof2Position, player.screenPos) <= 64)
-            {   
-                if(Proof2 == true)
-                {
-                    GameData.Task++;
-                    Proof2 = false;
-                }
+            if(Vector2.Distance(player.screenPos, camera.WorldToScreen(new Vector2(992, 729))) <= 64 && proof == false)
+            {
+                GameData.Task++;
+                proof = true;
             }
+
+            if(Vector2.Distance(player.screenPos, camera.WorldToScreen(new Vector2(1501, 539))) <= 64)
+            {
+                code = true;
+                GameData.Move = false;
+            }
+        }
+
+        if(state.IsKeyDown(Keys.Escape))
+        {
+            if(Vector2.Distance(player.screenPos, camera.WorldToScreen(new Vector2(1501, 539))) <= 64)
+            {
+                code = false;
+                GameData.Move = true;
+            }
+        }
+
+        if(Vector2.Distance(player.screenPos, camera.WorldToScreen(new Vector2(1280, 1460))) <= 100)
+        {
+            sceneManager.ChangeScene("house-floor-1");
         }
     }
 
@@ -180,17 +192,6 @@ public class Office : IScene
         int Height = graphicsDevice.Viewport.Height;
 
         graphicsDevice.Clear(Color.Black);
-
-        Vector2 GhostPosition = camera.WorldToScreen(Ghost);
-
-        if(route == false)
-        {
-            spriteBatch.Draw(Ghost2, GhostPosition, null, Color.White * 0.15f, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0.5f);
-        } else {
-            spriteBatch.Draw(Ghost1, GhostPosition, null, Color.White * 0.15f, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0.5f);
-        }
-
-        player.Draw(spriteBatch, playerTexture, camera);
 
         for (int y = 0; y < mapHeight; y++)
         {
@@ -222,9 +223,28 @@ public class Office : IScene
             }
         }
 
+        Vector2 GhostPosition = camera.WorldToScreen(Ghost);
+
+        player.Draw(spriteBatch, playerTexture, camera);
+
+        if(route == false)
+        {
+            spriteBatch.Draw(Ghost1, GhostPosition, null, Color.White * 0.15f, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0.5f);
+        } else {
+            spriteBatch.Draw(Ghost2, GhostPosition, null, Color.White * 0.15f, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0.5f);
+        }
+
         Vector2 ObjectM = pixelfont.MeasureString(Task[GameData.Task]);
         Vector2 Object = new Vector2((int)((Width / 2) - ((ObjectM.X / 2) * 0.5)),(int)(50 - ((ObjectM.Y / 2) * 0.5)));
 
         spriteBatch.DrawString(pixelfont, Task[GameData.Task], Object, Color.White, 0f, Vector2.Zero, 0.5f, SpriteEffects.None, 0.7f);
+
+        if(code == true)
+        {
+            spriteBatch.Draw(codePaper, new Rectangle(Width / 2 - 250, Height / 2 - 150, 500, 300), null, Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0.6f);
+            
+            Vector2 CodeM = pixelfont.MeasureString("Code: 6036");
+            spriteBatch.DrawString(pixelfont, "Code: 6036", new Vector2((Width / 2) - (CodeM.X / 2), (Height / 2 - (CodeM.Y / 2))), Color.Black,0f, Vector2.Zero, 1f, SpriteEffects.None, 0.7f);
+        }
     }
 }

@@ -48,7 +48,7 @@ public class House1 : IScene
     private double CodesCooldown;
     private int? Codes = null;
 
-    private string[] Task = new string[5];
+    private string[] Task = new string[4];
 
     private Player player;
     private Camera2D camera;
@@ -123,11 +123,10 @@ public class House1 : IScene
 
         pixelfont = contentManager.Load<SpriteFont>("pixelfont");
 
-        Task[0] = "Find evidence 0/3";
-        Task[1] = "Find evidence 1/3";
-        Task[2] = "Find evidence 2/3";
-        Task[3] = "Find evidence 3/3";
-        Task[4] = "Leave the mansion.";
+        Task[0] = "Object: Find evidence 0/3";
+        Task[1] = "Object: Find evidence 1/3";
+        Task[2] = "Object: Find evidence 2/3";
+        Task[3] = "Object: Find evidence 3/3";
 
     }
 
@@ -136,6 +135,12 @@ public class House1 : IScene
         player.Update(gameTime, solidTiles, camera);
         camera.Follow(player.Position, new Vector2(map.Width * 64, map.Height * 64));
 
+        if(GameData.PlayerVector != null)
+        {
+            player.Position = GameData.PlayerVector.Value;
+            GameData.PlayerVector = null;
+        }
+
         MouseState mouse = Mouse.GetState();
 
         if (mouse.LeftButton == ButtonState.Pressed)
@@ -143,15 +148,16 @@ public class House1 : IScene
             if(KeyPanel == true) {
                 for (int i = 0; i < 12; i++)
                 {
-                    if (Vector2.Distance(KeysPos[i], new Vector2((float)mouse.X, (float)mouse.Y)) <= 50 && CodesCooldown <= 0)
+                    if (Vector2.Distance(KeysPos[i], new Vector2((int)mouse.X, (int)mouse.Y)) <= 50 && CodesCooldown <= 0)
                     {
                         if(i == 9)
                         {
                             Codes = Codes / 10;
+                            CodesCooldown = 250;
                         } else if(i == 10)
                         {
                             Codes = Codes * 10;
-                            CodesCooldown = 500;
+                            CodesCooldown = 250;
                         } else if(i == 11)
                         {
                             if(Codes == 6036)
@@ -174,7 +180,7 @@ public class House1 : IScene
                             {
                                 Codes = Codes * 10 + (i + 1);
                             }
-                            CodesCooldown = 500;
+                            CodesCooldown = 250;
                         }
                     }
                 }
@@ -269,12 +275,16 @@ public class House1 : IScene
             
             if(Vector2.Distance(FloorDoorPosition, player.screenPos) <= 64)
             {
-                if(FloorDoor == false)
+                if(FloorDoor == false && KeyInHand == true)
                 {
                     KeyInHand = false;
                     FloorDoor = true;
-                } else {
-                    
+                    sceneManager.ChangeScene("house-floor-2");
+                    GameData.PlayerVector = new Vector2(1279, 1340);
+                } else if(FloorDoor == true)
+                {
+                    sceneManager.ChangeScene("house-floor-2");
+                    GameData.PlayerVector = new Vector2(1279, 1340);
                 }
             }
 
@@ -304,6 +314,11 @@ public class House1 : IScene
             {
                 KeyPanel = false;
                 GameData.Move = true;
+            }
+
+            if(Vector2.Distance(player.screenPos, camera.WorldToScreen(new Vector2(1886, 3293))) <= 64)
+            {
+                sceneManager.ChangeScene("garden");
             }
     }
 
@@ -391,7 +406,6 @@ public class House1 : IScene
                     Vector2 textPos = new Vector2( (Width / 2 - 110) + (110 * x) + 35, (Height / 2 - 150) + (110 * y) + 25);
                     Vector2 buttonCenter = new Vector2((Width / 2 - 110) + (110 * x) + 50, (Height / 2 - 150) + (110 * y) + 50);
                     KeysPos[num-1] = buttonCenter;
-
 
                     if(num == 10)
                     {
