@@ -20,8 +20,7 @@ public class House1 : IScene
     private Texture2D playerTexture;
     private Texture2D Ghost1;
     private Texture2D Ghost2;
-    private Texture2D OutDoorTileSet;
-    private Texture2D InDoorTileSet;
+    private Texture2D TileSet;
     private Texture2D Key;
     private Texture2D KeyPanel_Main;
     private Texture2D KeyPanel_Button;
@@ -43,10 +42,13 @@ public class House1 : IScene
     private bool KeyPanel = false;
     private bool Error = false;
     private bool OfficeClosed = true;
+    private bool ProofAvailable = true;
 
     private double GhostSongCooldown;
     private double CodesCooldown;
     private int? Codes = null;
+
+    private string[] Task = new string[5];
 
     private Player player;
     private Camera2D camera;
@@ -114,13 +116,19 @@ public class House1 : IScene
         Ghost1 = contentManager.Load<Texture2D>("ghost_1");
         Ghost2 = contentManager.Load<Texture2D>("ghost_2");
         GhostSong = contentManager.Load<Song>("ghost-in-near");
-        OutDoorTileSet = contentManager.Load<Texture2D>("tilesmap");
-        InDoorTileSet = contentManager.Load<Texture2D>("tilesmap-indoor");
+        TileSet = contentManager.Load<Texture2D>("tilesmap");
         Key = contentManager.Load<Texture2D>("key");
 
         solidTiles = LoadCollisionObjects("Content/floor.tmx");
 
         pixelfont = contentManager.Load<SpriteFont>("pixelfont");
+
+        Task[0] = "Find evidence 0/3";
+        Task[1] = "Find evidence 1/3";
+        Task[2] = "Find evidence 2/3";
+        Task[3] = "Find evidence 3/3";
+        Task[4] = "Leave the mansion.";
+
     }
 
     public void Update(GameTime gameTime)
@@ -133,9 +141,6 @@ public class House1 : IScene
         if (mouse.LeftButton == ButtonState.Pressed)
         {
             if(KeyPanel == true) {
-
-                Console.WriteLine($"X: {relativeX}, Y: {relativeY}");
-
                 for (int i = 0; i < 12; i++)
                 {
                     if (Vector2.Distance(KeysPos[i], new Vector2((float)mouse.X, (float)mouse.Y)) <= 50 && CodesCooldown <= 0)
@@ -278,14 +283,21 @@ public class House1 : IScene
             if(Vector2.Distance(OfficeDoorPosition, player.screenPos) <= 64 && KeyPanel == false)
             {
                 KeyPanel = true;
-                Console.WriteLine("kódpanel megnyitva");
+                Console.WriteLine(GameData.Task);
+            }
+
+            Vector2 Proof1Position = camera.WorldToScreen(new Vector2(3374, 2789));
+
+            if(Vector2.Distance(Proof1Position, player.screenPos) <= 70 && ProofAvailable == true)
+            {
+                GameData.Task++;
+                ProofAvailable = false;
             }
         }
 
             if(KeyPanel == true && state.IsKeyDown(Keys.Escape))
             {
                 KeyPanel = false;
-                Console.WriteLine("kódpanel bezárva");
             }
     }
 
@@ -309,7 +321,7 @@ public class House1 : IScene
                 var tile = map.Layers[0].Tiles[i];
                 if (tile.Gid == 0) continue;
 
-                int tilesPerRow = OutDoorTileSet.Width / map.TileWidth;
+                int tilesPerRow = TileSet.Width / map.TileWidth;
                 int tileIndex = tile.Gid - 1;
 
                 int tileIndexX = tileIndex % tilesPerRow;
@@ -325,7 +337,7 @@ public class House1 : IScene
                 Vector2 worldPosition = new Vector2(x * map.TileWidth, y * map.TileHeight);
                 Vector2 screenPosition = camera.WorldToScreen(worldPosition);
 
-                spriteBatch.Draw(OutDoorTileSet, screenPosition, source, Color.White * 0.3f);
+                spriteBatch.Draw(TileSet, screenPosition, source, Color.White * 0.3f);
             }
         }
 
@@ -400,5 +412,10 @@ public class House1 : IScene
                 spriteBatch.DrawString(pixelfont, Codes.ToString(), new Vector2((Width / 2  - 110) + 110, (Height / 2 - 280) + 25), Color.Black, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0.7f);
             }
         }
+        
+        Vector2 ObjectM = pixelfont.MeasureString(Task[GameData.Task]);
+        Vector2 Object = new Vector2((int)((Width / 2) - ((ObjectM.X / 2) * 0.5)),(int)(50 - ((ObjectM.Y / 2) * 0.5)));
+
+        spriteBatch.DrawString(pixelfont, Task[GameData.Task], Object, Color.White, 0f, Vector2.Zero, 0.5f, SpriteEffects.None, 0.7f);
     }
 }
