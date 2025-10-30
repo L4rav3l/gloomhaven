@@ -88,7 +88,8 @@ public class Menu : IScene
             {
                 if(_Selected == 0)
                 {
-
+                    sceneManager.AddScene(new StartGame(graphicsDevice, sceneManager, contentManager), "start-game");
+                    sceneManager.ChangeScene("start-game");
                 } else {
                     new Game1().Exit();
                 }
