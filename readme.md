@@ -5,7 +5,7 @@ In this game, you play a newspaper reporter who investigates Crowley Mansion. Du
 C# monogame
 
 ## Demo video
-coming soon (probably in 10 minutes)
+https://youtu.be/fprmWCBMdiE
 
 ## Build command
 
