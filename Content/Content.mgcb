@@ -113,3 +113,6 @@
 /processorParam:TextureFormat=Color
 /build:tilesmap.png
 
+#begin tilesmap.tsx
+/copy:tilesmap.tsx
+

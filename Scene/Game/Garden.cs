@@ -86,13 +86,13 @@ public class Garden : IScene
 
     public void Update(GameTime gameTime)
     {
-    player.Update(gameTime, solidTiles, camera);
+        player.Update(gameTime, solidTiles, camera);
 
-    Vector2 worldSize = new Vector2(map.Width * map.TileWidth, map.Height * map.TileHeight);
+        Vector2 worldSize = new Vector2(map.Width * map.TileWidth, map.Height * map.TileHeight);
 
-    camera.Follow(player.Position, worldSize);
+        camera.Follow(player.Position, worldSize);
 
-    KeyboardState state = Keyboard.GetState();
+        KeyboardState state = Keyboard.GetState();
 
         if(state.IsKeyDown(Keys.E))
         {
@@ -143,7 +143,7 @@ public class Garden : IScene
                 Vector2 worldPosition = new Vector2(x * map.TileWidth, y * map.TileHeight);
                 Vector2 screenPosition = camera.WorldToScreen(worldPosition);
 
-                spriteBatch.Draw(tileset, screenPosition, source, Color.White);
+                spriteBatch.Draw(tileset, screenPosition, source, Color.White * 0.3f);
             }
         }
 

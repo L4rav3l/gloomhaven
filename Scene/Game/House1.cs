@@ -148,18 +148,18 @@ public class House1 : IScene
                         if(i == 9)
                         {
                             Codes = Codes / 10;
-                            Console.WriteLine("Törlés");
                         } else if(i == 10)
                         {
                             Codes = Codes * 10;
-                            Console.WriteLine("nulla");
                             CodesCooldown = 500;
                         } else if(i == 11)
                         {
-                            Console.WriteLine("Beküldés");
                             if(Codes == 6036)
                             {
+                                GameData.Move = true;
                                 OfficeClosed = false;
+                                KeyPanel = false;
+                                sceneManager.ChangeScene("office");
                             } else {
                                 CodesCooldown = 2000;
                                 Error = true;
@@ -279,11 +279,16 @@ public class House1 : IScene
             }
 
             Vector2 OfficeDoorPosition = camera.WorldToScreen(new Vector2(512, 2587));
-
             if(Vector2.Distance(OfficeDoorPosition, player.screenPos) <= 64 && KeyPanel == false)
             {
-                KeyPanel = true;
-                Console.WriteLine(GameData.Task);
+                if(OfficeClosed == false)
+                {
+                    GameData.PlayerVector = new Vector2(1218, 1856);
+                    sceneManager.ChangeScene("office");
+                } else {
+                    KeyPanel = true;
+                    GameData.Move = false;
+                }
             }
 
             Vector2 Proof1Position = camera.WorldToScreen(new Vector2(3374, 2789));
@@ -298,6 +303,7 @@ public class House1 : IScene
             if(KeyPanel == true && state.IsKeyDown(Keys.Escape))
             {
                 KeyPanel = false;
+                GameData.Move = true;
             }
     }
 

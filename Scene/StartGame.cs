@@ -33,6 +33,7 @@ public class StartGame : IScene
         {
             sceneManager.AddScene(new Garden(graphicsDevice, sceneManager, contentManager), "garden");
             sceneManager.AddScene(new House1(graphicsDevice, sceneManager, contentManager), "house-floor-1");
+            sceneManager.AddScene(new Office(graphicsDevice, sceneManager, contentManager), "office");
             sceneManager.AddScene(new Ghost(graphicsDevice, sceneManager, contentManager), "ghost");
             
             sceneManager.ChangeScene("house-floor-1");

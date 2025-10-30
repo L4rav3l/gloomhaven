@@ -29,6 +29,9 @@ public class Office : IScene
     private Vector2 Ghost;
 
     private bool route;
+    private bool Proof2 = true;
+
+    private double GhostSongCooldown;
 
     private string[] Task = new string[5];
 
@@ -61,7 +64,7 @@ public class Office : IScene
             }
         }
 
-        return solidTiles
+        return solidTiles;
     }
 
     public Office(GraphicsDevice graphicsDevice, SceneManager sceneManager, ContentManager contentManager)
@@ -70,12 +73,18 @@ public class Office : IScene
         this.sceneManager = sceneManager;
         this.contentManager = contentManager;
 
-        Ghost = new Vector2(0, 0);
+        Ghost = new Vector2(718, 1477);
         route = false;
     }
 
     public void LoadContent()
     {
+        if(GameData.PlayerVector != null)
+        {
+            player.screenPos = GameData.PlayerVector.Value;
+            GameData.PlayerVector = null;
+        }
+
         player = new Player(new Vector2(1218, 1856));
         camera = new Camera2D(graphicsDevice.Viewport);
 
@@ -83,7 +92,7 @@ public class Office : IScene
 
         playerTexture = contentManager.Load<Texture2D>("player");
         Ghost1 = contentManager.Load<Texture2D>("ghost_1");
-        Ghost2 = ContentManager.Load<Texture2D>("ghost_2");
+        Ghost2 = contentManager.Load<Texture2D>("ghost_2");
         GhostSong = contentManager.Load<Song>("ghost-in-near");
         TileSet = contentManager.Load<Texture2D>("tilesmap");
 
@@ -98,9 +107,124 @@ public class Office : IScene
         Task[4] = "Leave the mansion.";
     }
 
-    public void(GameTime gameTime)
+    public void Update(GameTime gameTime)
     {
         player.Update(gameTime, solidTiles, camera);
-        camera.Follow(player.Position, new Vector2(map.Width * 64, map.Height * 64))
+        camera.Follow(player.Position, new Vector2(map.Width * 64, map.Height * 64));
+
+        double elapsed = gameTime.ElapsedGameTime.TotalSeconds * 1000;
+
+        Vector2 GhostPosition = camera.WorldToScreen(Ghost);
+
+        if(GhostSongCooldown >= 0)
+        {
+            GhostSongCooldown -= elapsed;
+        } else if(Vector2.Distance(GhostPosition, player.screenPos) <= 320)
+        {
+            GhostSongCooldown = 10000;
+            MediaPlayer.Play(GhostSong);
+            MediaPlayer.IsRepeating = false;
+        }
+
+        if(Vector2.Distance(player.screenPos, GhostPosition) <= 48)
+        {
+            sceneManager.ChangeScene("ghost");
+        }
+
+        if(Ghost.X == 718 && route == false)
+        {
+            route = true;
+        } else if(route == false)
+        {
+            Ghost.X--;
+        }
+
+        if(Ghost.X == 1771 && route == true)
+        {
+            route = false;
+        } else if(route == true)
+        {
+            Ghost.X++;
+        }
+
+        Vector2 Exit = camera.WorldToScreen(new Vector2(1212, 1952));
+
+        if(Vector2.Distance(Exit, player.screenPos) <= 64)
+        {
+            sceneManager.ChangeScene("house-floor-1");
+        }
+
+        KeyboardState state = Keyboard.GetState();
+
+        if(state.IsKeyDown(Keys.E))
+        {
+            Vector2 Proof2Position = camera.WorldToScreen(new Vector2(1243, 1175));
+
+            if(Vector2.Distance(Proof2Position, player.screenPos) <= 64)
+            {   
+                if(Proof2 == true)
+                {
+                    GameData.Task++;
+                    Proof2 = false;
+                }
+            }
+        }
+    }
+
+    public void Draw(SpriteBatch spriteBatch)
+    {
+        int mapWidth = map.Width;
+        int mapHeight = map.Height;
+
+        int Width = graphicsDevice.Viewport.Width;
+        int Height = graphicsDevice.Viewport.Height;
+
+        graphicsDevice.Clear(Color.Black);
+
+        Vector2 GhostPosition = camera.WorldToScreen(Ghost);
+
+        if(route == false)
+        {
+            spriteBatch.Draw(Ghost2, GhostPosition, null, Color.White * 0.15f, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0.5f);
+        } else {
+            spriteBatch.Draw(Ghost1, GhostPosition, null, Color.White * 0.15f, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0.5f);
+        }
+
+        player.Draw(spriteBatch, playerTexture, camera);
+
+        for (int y = 0; y < mapHeight; y++)
+        {
+            for (int x = 0; x < mapWidth; x++)
+            {
+                int i = y * mapWidth + x;
+                if (i >= map.Layers[0].Tiles.Count) continue;
+
+                var tile = map.Layers[0].Tiles[i];
+                if (tile.Gid == 0) continue;
+
+                int tilesPerRow = TileSet.Width / map.TileWidth;
+                int tileIndex = tile.Gid - 1;
+
+                int tileIndexX = tileIndex % tilesPerRow;
+                int tileIndexY = tileIndex / tilesPerRow;
+
+                Rectangle source = new Rectangle(
+                    tileIndexX * map.TileWidth,
+                    tileIndexY * map.TileHeight,
+                    map.TileWidth,
+                    map.TileHeight
+                );
+
+                Vector2 worldPosition = new Vector2(x * map.TileWidth, y * map.TileHeight);
+                Vector2 screenPosition = camera.WorldToScreen(worldPosition);
+
+                spriteBatch.Draw(TileSet, screenPosition, source, Color.White * 0.3f);
+            }
+        }
+
+        Vector2 ObjectM = pixelfont.MeasureString(Task[GameData.Task]);
+        Vector2 Object = new Vector2((int)((Width / 2) - ((ObjectM.X / 2) * 0.5)),(int)(50 - ((ObjectM.Y / 2) * 0.5)));
+
+        spriteBatch.DrawString(pixelfont, Task[GameData.Task], Object, Color.White, 0f, Vector2.Zero, 0.5f, SpriteEffects.None, 0.7f);
     }
 }

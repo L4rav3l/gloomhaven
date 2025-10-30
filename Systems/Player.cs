@@ -29,6 +29,8 @@ namespace Gloomhaven
             float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
             Vector2 oldPos = Position;
 
+            if(GameData.Move == true)
+            {
             Vector2 movement = Vector2.Zero;
             if (kb.IsKeyDown(Keys.W)) movement.Y -= 1;
             if (kb.IsKeyDown(Keys.S)) movement.Y += 1;
@@ -39,6 +41,7 @@ namespace Gloomhaven
                 movement.Normalize();
 
             Position += movement * Speed * dt;
+            }
 
             foreach (var solid in solidTiles)
             {
